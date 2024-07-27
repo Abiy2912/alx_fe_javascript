@@ -12,20 +12,16 @@
 </head>
 <body>
   <h1>Dynamic Quote Generator</h1>
-  <div id="newQuoteButtonContainer">
-    <button id="newQuote">Show New Quote</button>
-    <button id="addQuote">Add Quote</button>
+  <input type="file" id="importFile" accept=".json" />
+  <button id="exportJson">Export to JSON</button>
+  <div>
+    <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+    <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+    <button onclick="createAddQuoteForm()">Add Quote</button>
+    <button id="generateQuote">Generate Quote</button>
   </div>
-  <div id="newQuoteFormContainer">
-    <div id="newQuoteForm">
-      <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
-      <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-      <button onclick="addQuote()">Add Quote</button>
-    </div>
-    <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
-    <button id="exportQuotes">Export Quotes</button>
-  </div>
-  <div id="quoteDisplay"></div>
+  <div id="categoryFilterContainer"></div>
+  <div id="categoryFilterDisplay"></div>
   <script src="script.js"></script>
 </body>
 </html>
