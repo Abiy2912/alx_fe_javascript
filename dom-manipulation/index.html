@@ -4,24 +4,27 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dynamic Quote Generator</title>
-  <style>
-    #newQuoteForm {
-      display: none;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <h1>Dynamic Quote Generator</h1>
-  <input type="file" id="importFile" accept=".json" />
-  <button id="exportJson">Export to JSON</button>
-  <div>
+  <div id="filterControls">
+    <label for="categoryFilter">Filter by category:</label>
+    <select id="categoryFilter" onchange="filterQuotes()">
+      <option value="all">All Categories</option>
+    </select>
+    <button onclick="showRandomQuote()">Show New Quote</button>
+    <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
+    <button onclick="exportQuotes()">Export Quotes</button>
+  </div>
+  <div id="quoteblock"></div>
+  <div id="formContainer" style="display:none;">
     <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
     <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-    <button onclick="createAddQuoteForm()">Add Quote</button>
-    <button id="generateQuote">Generate Quote</button>
+    <button onclick="addQuote()">Add Quote</button>
+    <button onclick="toggleForm()">Cancel</button>
   </div>
-  <div id="categoryFilterContainer"></div>
-  <div id="categoryFilterDisplay"></div>
+  <button onclick="toggleForm()">Add Quote</button>
   <script src="script.js"></script>
 </body>
 </html>
