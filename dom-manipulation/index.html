@@ -1,5 +1,3 @@
-**index.html**
-```html
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,27 +5,27 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dynamic Quote Generator</title>
   <style>
-    #categorySelect {
-      margin-top: 20px;
-    }
-    #newQuoteText,
-    #newQuoteCategory {
-      margin-right: 10px;
+    #newQuoteForm {
+      display: none;
     }
   </style>
 </head>
 <body>
   <h1>Dynamic Quote Generator</h1>
-  <div id="categorySelect">
-    <label for="category">Choose a category:</label>
-    <select id="category">
-      <option value="">All Categories</option>
-    </select>
+  <div id="newQuoteButtonContainer">
+    <button id="newQuote">Show New Quote</button>
+    <button id="addQuote">Add Quote</button>
+  </div>
+  <div id="newQuoteFormContainer">
+    <div id="newQuoteForm">
+      <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+      <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+      <button onclick="addQuote()">Add Quote</button>
+    </div>
+    <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
+    <button id="exportQuotes">Export Quotes</button>
   </div>
   <div id="quoteDisplay"></div>
-  <button id="newQuote">Show New Quote</button>
-  <button onclick="createAddQuoteForm()">Add a Quote</button>
   <script src="script.js"></script>
 </body>
 </html>
-```
