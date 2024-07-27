@@ -1,3 +1,7 @@
+
+// Function to add quotes dynamically
+
+
 const quotes = [
   { text: 'Be the change that you wish to see in the world.', category: 'Inspiration' },
   { text: 'The only way to do great work is to love what you do.', category: 'Work' },
@@ -73,4 +77,3 @@ function addQuoteToList(newQuote) {
 
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
-// Function to add quotes dynamically
