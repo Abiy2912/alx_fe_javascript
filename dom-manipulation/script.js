@@ -44,13 +44,13 @@ function addQuote() {
     document.getElementById("newQuoteText").value = "";
     document.getElementById("newQuoteCategory").value = "";
     saveQuotes();
-    updateCategoryFilter();
+    populateCategories();
     showRandomQuote(getSelectedCategory());
   }
 }
 
 // Function to update the category filter dropdown
-function updateCategoryFilter() {
+function populateCategories() {
   const categoryFilter = document.getElementById("categoryFilter");
   const categories = [...new Set(quotes.map(quote => quote.category))];
   categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
