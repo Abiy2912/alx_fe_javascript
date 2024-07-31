@@ -1,5 +1,9 @@
 // Quote array with objects containing text and category
-let quotes = [];
+let quotes = [
+  { text: 'Learning JavaScript deeply is like peeling an onion. The more layers you peel, the more you cry.', category: 'JavaScript' },
+  { text: 'The only way to do great work is to love what you do.', category: 'Motivation' },
+  // ... other initial quotes
+];
 
 // Load quotes from local storage
 if (localStorage.getItem("quotes")) {
@@ -24,7 +28,7 @@ function addQuote() {
   if (newQuoteText && newQuoteCategory) {
     quotes.push({ text: newQuoteText, category: newQuoteCategory });
     saveQuotes();
-    updateCategories();
+    populateCategories();
     showRandomQuote();
     document.getElementById("newQuoteText").value = "";
     document.getElementById("newQuoteCategory").value = "";
@@ -36,8 +40,8 @@ function saveQuotes() {
   localStorage.setItem("quotes", JSON.stringify(quotes));
 }
 
-// Function to update categories in the dropdown
-function updateCategories() {
+// Function to populate categories in the dropdown
+function populateCategories() {
   const categoryFilter = document.getElementById("categoryFilter");
   const categories = Array.from(new Set(quotes.map(quote => quote.category)));
   categoryFilter.innerHTML = `
@@ -79,7 +83,7 @@ function importFromJsonFile(event) {
     const importedQuotes = JSON.parse(event.target.result);
     quotes.push(...importedQuotes);
     saveQuotes();
-    updateCategories();
+    populateCategories();
     alert('Quotes imported successfully!');
   };
   fileReader.readAsText(event.target.files[0]);
@@ -87,7 +91,7 @@ function importFromJsonFile(event) {
 
 // Initialize the application
 showRandomQuote();
-updateCategories();
+populateCategories();
 
 // Load last selected filter from local storage
 const lastFilter = localStorage.getItem("lastFilter");
