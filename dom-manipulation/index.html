@@ -4,24 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Dynamic Quote Generator</title>
-  <style>
-    #categoryFilter {
-      margin-top: 20px;
-    }
-  </style>
+  <link rel="stylesheet" href="styles.css">
 </head>
 <body>
   <h1>Dynamic Quote Generator</h1>
-  <div id="categoryFilter"></div>
-  <button id="newQuote">Show New Quote</button>
   <div id="quoteDisplay"></div>
-  <div>
+  <button id="newQuote">Show New Quote</button>
+  <div id="addQuoteForm">
     <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
     <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-    <button onclick="addQuote()">Add Quote</button>
+    <button id="addQuoteBtn">Add Quote</button>
   </div>
-  <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
-  <button onclick="exportQuotes()">Export Quotes</button>
+  <select id="categoryFilter" onchange="filterQuotes()">
+    <option value="all">All Categories</option>
+  </select>
+  <button id="exportBtn">Export to JSON</button>
+  <input type="file" id="importFile" accept=".json" />
   <script src="script.js"></script>
 </body>
 </html>
