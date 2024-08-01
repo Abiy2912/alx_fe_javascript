@@ -1,3 +1,6 @@
+let fetchJson;
+
+
 // Assume you have a fetchJson function that fetches data from a mock API and returns a promise with JSON data
 function fetchJson(url) {
   return fetch(url)
@@ -17,15 +20,13 @@ let quotes = [];
 let lastFetchTime = 0;
 
 // Function to fetch new quotes from the server every 5 minutes
-function fetchAndSyncQuotes() {
+function fetchQuotesFromServer() {
   fetchJson(apiEndpoint)
     .then(serverQuotes => {
       // Set the server quotes as the new source of data
       quotes = serverQuotes;
       saveQuotes();
       filterQuotes('all'); // Update UI with the fetched data
-      lastFetchTime = Date.now();
-      setTimeout(fetchAndSyncQuotes, 300000); // Set next fetch for 5 minutes from now
     })
     .catch(error => {
       console.error('Failed to fetch quotes:', error);
@@ -131,13 +132,17 @@ function filterQuotes(category = 'all') {
 
   // Update the UI with the filtered quotes
   quoteContainer.innerHTML = filteredQuotes;
-  localStorage.setItem('lastSelectedCategory', category); // Save the last selected category
 }
 
-// Initialize the category filter and start the periodic fetch
-loadQuotes();
-populateCategories();
-filterQuotes(localStorage.getItem('lastSelectedCategory') || 'all');
+// Function to initialize the category filter
+function initializeCategoryFilter() {
+  // Populate the category filter
+  populateCategories();
+
+  // Load the last selected category from local storage or default to 'all'
+  const lastSelectedCategory = localStorage.getItem('lastSelectedCategory') || 'all';
+  filterQuotes(lastSelectedCategory);
+}
 
 // Event listener for adding new quotes
 document.getElementById('submit-button').addEventListener('click', function(e) {
@@ -171,54 +176,12 @@ document.getElementById('submit-button').addEventListener('click', function(e) {
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
 // Event listener for the category filter
-document.getElementById('categoryFilter').addEventListener('change', (e) => {
+document.getElementById('categoryfilter').addEventListener('change', (e) => {
   const selectedCategory = e.target.value;
   filterQuotes(selectededCategory);
 });
 
-// Function to fetch and show a random quote from the server
-function showRandomQuote() {
-  fetchJson(`${apiEndpoint}/random`)
-    .then(randomQuote => {
-      // Clear the current quote container
-      const quoteContainer = document.getElementById('quotes-container');
-      quoteContainer.innerHTML = '';
-
-      // Create a new quote element with the random quote
-      const newQuoteElement = document.createElement('div');
-      newQuoteElement.classList.add('category-filter');
-      newQuoteElement.innerHTML = `<p>${randomQuote.text}</p><span>- ${randomQuote.category}</span>`;
-      quoteContainer.appendChild(newQuoteElement);
-    })
-    .catch(error => {
-      console.error('Failed to fetch random quote:', error);
-      alert('Failed to fetch random quote. Please check your internet connection and try again.');
-    });
-}
-
-// Function to fetch and save quotes from the server
-function fetchAndSaveQuotes() {
-  fetchJson(apiEndpoint)
-    .then(serverQuotes => {
-      // Set the server quotes as the new source of data
-      quotes = serverQuotes;
-      saveQuotes();
-      // Update UI with the fetched data
-      filterQuotes('all');
-    })
-    .catch(error => {
-      console.error('Failed to fetch quotes:', error);
-      alert('Failed to fetch quotes from the server. Please check your internet connection and try again.');
-    });
-}
-
-// Function to fetch and save quotes from the server and populate the UI with them
-function startPeriodicSync() {
-  fetchAndSaveQuotes();
-  setTimeout(() => {
-    fetchAndSyncQuotes();
-  }, 300000); // Set next fetch for 5 minutes from now
-}
-
-// Initialize the periodic sync
+// Initialize the category filter and start the periodic sync when the page loads
+loadQuotes();
+initializeCategoryFilter();
 startPeriodicSync();
