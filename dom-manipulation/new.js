@@ -1,12 +1,3 @@
-// Corrected JavaScript code
-
-let quotes = [
-  { text: 'Love is not only something you feel, it is something you do.', category: 'Love' },
-  { text: 'Success is not final, failure is not fatal: it is the courage to continue that counts.', category: 'Success' },
-  { text: 'Be yourself; everyone else is already taken.', category: 'Identity' },
-  { text: 'You miss 100% of the shots you don’t take.', category: 'Motivation' }
-];
-
 // Function to display a random quote
 function showRandomQuote() {
   const quote = quotes[Math.floor(Math.random() * quotes.length)];
@@ -14,7 +5,7 @@ function showRandomQuote() {
   quoteDisplay.innerHTML = `<p>${quote.text}</p><span>- ${quote.category}</span>`;
 }
 
-// Function to create a form to add a new quote
+// Function to add a new quote to the quotes array
 function addQuote() {
   const newQuoteText = document.getElementById('newQuoteText').value;
   const newQuoteCategory = document.getElementById('newQuoteCategory').value;
@@ -24,11 +15,9 @@ function addQuote() {
   document.getElementById('newQuoteCategory').value = '';
   document.getElementById('newQuoteText').classList.add('hidden');
   document.getElementById('newQuoteCategory').classList.add('hidden');
-  showRandomQuote(); // Display the new quote after adding it
+  saveQuotes(); // Save the new quote to local storage
+  filterQuotes(newQuoteCategory); // Filter quotes by the new category
 }
-
-// Event listener for the "Show New Quote" button
-document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
 // Function to save the current quote array to local storage
 function saveQuotes() {
@@ -83,9 +72,6 @@ function populateCategories() {
 
 // Function to filter quotes based on the selected category
 function filterQuotes(category = 'all') {
-  const quoteContainer = document.getElementById('quotes-container');
-  quoteContainer.innerHTML = '';
-
   // Clear any existing filters
   const activeFilters = document.querySelectorAll('.category-filter.active');
   activeFilters.forEach(filter => {
@@ -96,20 +82,23 @@ function filterQuotes(category = 'all') {
   const selectedFilter = document.querySelector(`#categoryFilter[value="${category}"]`);
   selectedFilter.classList.add('active');
 
-  
-   // Map the quotes to create filtered HTML elements
-   const filteredQuotes = quotes.map( quote => {
+  // Map the quotes to create filtered HTML elements
+  const filteredQuotes = quotes.map( quote => {
     if (category === 'all' || quote.category === category) {
-      return `<div class="category-filter">
+      return `<div class="category-filter ${category === 'all' ? 'active' : ''}">
                 <p>${ quote.text}</p><span>- ${ quote.category}</span>
               </div>`;
     }
     return ''; // Return an empty string if the quote doesn't match the filter
   }).filter(Boolean).join(''); // Remove empty strings and join the filtered HTML
 
+  // Clear the current quote container
+  const quoteContainer = document.getElementById('quotes-container');
+  quoteContainer.innerHTML = '';
+
+  // Update the UI with the filtered quotes
   quoteContainer.innerHTML = filteredQuotes;
 }
-
 
 // Function to initialize the category filter
 function initializeCategoryFilter() {
@@ -144,16 +133,22 @@ document.getElementById('submit-button').addEventListener('click', function(e) {
     category: authorInput.value
   };
   quotes.push(newQuote);
+  saveQuotes(); // Save the new quote to local storage
 
   // Update the UI with the new quote
   const newQuoteElement = document.createElement('div');
   newQuoteElement.classList.add('category-filter');
   newQuoteElement.innerHTML = `<p>${newQuote.text}</p><span>- ${newQuote.category}</span>`;
   document.getElementById('quotes-container').appendChild(newQuoteElement);
+});
 
-  // Set the last selected category to the new category
-  localStorage.setItem('lastSelectedCategory', newQuote.category);
-  filterQuotes(newQuote.category);
+// Event listener for the "Show New Quote" button
+document.getElementById('newQuote').addEventListener('click', showRandomQuote);
+
+// Event listener for the category filter
+document.getElementById('categoryFilter').addEventListener('change', (e) => {
+  const selectedCategory = e.target.value;
+  filterQuotes(selectededCategory);
 });
 
 // Initialize the category filter when the page loads
