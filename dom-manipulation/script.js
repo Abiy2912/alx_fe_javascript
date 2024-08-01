@@ -96,16 +96,20 @@ function filterQuotes(category = 'all') {
   const selectedFilter = document.querySelector(`#categoryFilter[value="${category}"]`);
   selectedFilter.classList.add('active');
 
-  // Filter the quotes
-  quotes.forEach( quote => {
+  
+   // Map the quotes to create filtered HTML elements
+   const filteredQuotes = quotes.map( quote => {
     if (category === 'all' || quote.category === category) {
-      const quoteElement = document.createElement('div');
-      quoteElement.classList.add('category-filter');
-      quoteElement.innerHTML = `<p>${ quote.text}</p><span>- ${ quote.category}</span>`;
-      quoteContainer.appendChild(quoteElement);
+      return `<div class="category-filter">
+                <p>${ quote.text}</p><span>- ${ quote.category}</span>
+              </div>`;
     }
-  });
+    return ''; // Return an empty string if the quote doesn't match the filter
+  }).filter(Boolean).join(''); // Remove empty strings and join the filtered HTML
+
+  quoteContainer.innerHTML = filteredQuotes;
 }
+
 
 // Function to initialize the category filter
 function initializeCategoryFilter() {
