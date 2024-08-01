@@ -7,35 +7,23 @@
 </head>
 <body>
   <h1>Dynamic Quote Generator</h1>
-  <h1>Dynamic Quote Generator</h1>
   <div id="quoteDisplay"></div>
   
   <button id="newQuote">Show New Quote</button>
-
-  <div id="newQuoteFormContainer">
+  <div id="newQuoteFormContainer" style="display:none;">
     <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
     <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
-    <button onclick="addQuote()">Add Quote</button>
+    <button onclick="document.getElementById('newQuoteForm').submit()">Add Quote</button>
   </div>
-  <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
-
-  <label for="categoryFilter">Filter by:</label>
-  <select id="categoryFilter" onchange="filterQuotes()">
+  <input type="file" id="importFile" accept=".json" />
+  <select id="categoryFilter" onchange="filterQuotes(this.value)">
     <option value="all">All Categories</option>
+    <!-- Dynamically populated categories -->
   </select>
 
-  <div id="categoryControls">
-    <button onclick="filterQuotes('all')">All Categories</button>
-    <button onclick="filterQuotes('Inspiration')">Inspiration</button>
-    <button onclick="filterQuotes('Work')">Work</button>
-    <button onclick="filterQuotes('Life')">Life</button>
-    <button onclick="filterQuotes('Adversity')">Adversity</button>
-    <button onclick="filterQuotes('Success')">Success</button>
-    <button onclick="filterQuotes('Happiness')">Happiness</button>
-  </div>
-
-  <input type="hidden" id="lastFilteredCategory" value="all" />
-    
+  <form id="newQuoteForm">
+    <input type="submit" style="display:none" />
+  </form>
 
  <script src="script.js"></script>
 </body>

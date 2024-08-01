@@ -1,7 +1,3 @@
-
-// Function to add quotes dynamically
-
-
 const quotes = [
   { text: 'Be the change that you wish to see in the world.', category: 'Inspiration' },
   { text: 'The only way to do great work is to love what you do.', category: 'Work' },
@@ -11,66 +7,69 @@ const quotes = [
   { text: 'Happiness is not something ready made. It comes from your own actions.', category: 'Happiness' },
 ];
 
-//-----------------------------------
-function showRandomQuote(){
-  let quote = quotes[Math.floor(Math.random() * quotes.length)];
-  const quoteElement = document.createElement('div');
-  quoteElement.innerHTML = `<p class="text">${quote.text}</p><p class="category">- ${quote.category}</p>`;
-  document.getElementById('quoteDisplay').appendChild(quoteElement);
-}
-
-function addQuote(){
-  const newQuoteText = document.getElementById('newQuoteText').value.trim();
-  const newQuoteCategory = document.getElementById('newQuoteCategory').value.trim();
-  if(newQuoteText === '' || newQuoteCategory === ''){
-    alert('Please enter both quote text and category.');
-    return;
-  }
-  const userQuote = {text: newQuoteText, category: newQuoteCategory};
-  quotes.push(userQuote);
-  saveQuotes();
-  updateCategoryFilter();
-  document.getElementById('newQuoteFormContainer').style.display = 'none';
-
-  showRandomQuote();
-  document.getElementById('newQuoteForm').reset();
-}
-
-function saveQuotes(){
-  localStorage.setItem('quotes', JSON.stringify(quotes));
-  localStorage.setItem('lastFilteredCategory', document.getElementById('categoryFilter').value);
-}
-
-function loadQuotes(){
-  const savedQuotes = localStorage.getItem('quotes');
-  if(savedQuotes){
-    quotes = JSON.parse(savedQuotes);
-  }
-  updateCategoryFilter();
-}
-
-function updateCategoryFilter(){
-  const categories = new Set(quotes.map(q => q.category));
+function populateCategories() {
+  const uniqueCategories = new Set(quotes.map(item => item.category));
   const categoryFilter = document.getElementById('categoryFilter');
-  categoryFilter.innerHTML = `<option value="all">All Categories</option>`;
-  categories.forEach(category => {
+  uniqueCategories.forEach(category => {
     const option = document.createElement('option');
     option.value = category;
-    option.text = category;
+    option.textContent = category;
     categoryFilter.appendChild(option);
   });
 }
 
-function filterQuotes(category = 'all'){
-  const filteredQuotes = category === 'all' ? quotes : quotes.filter(q => q.category === category);
-  const quoteContainer = document.getElementById('quoteDisplay');
-  quoteContainer.innerHTML = '';
+function filterQuotes(category = 'all') {
+  const quoteDisplay = document.getElementById('quoteDisplay');
+  quoteDisplay.innerHTML = '';
+  const filteredQuotes = quotes.filter(q => category === 'all' || q.category === category);
   filteredQuotes.forEach(q => {
     const quoteElement = document.createElement('div');
     quoteElement.innerHTML = `<p class="text">${q.text}</p><p class="category">- ${q.category}</p>`;
-    quoteContainer.appendChild(quoteElement);
+    quoteDisplay.appendChild(quoteElement);
   });
-  document.getElementById('lastFilteredCategory').value = category;
+  saveFilter(category);
+}
+
+function saveFilter(category) {
+  localStorage.setItem('lastFilter', category);
+}
+
+function loadFilter() {
+  const lastFilter = localStorage.getItem('lastFilter');
+  if (lastFilter) {
+    filterQuotes(lastFilter);
+  } else {
+    filterQuotes('all');
+  }
+}
+
+function addQuote() {
+  const newQuoteText = document.getElementById('newQuoteText').value.trim();
+  const newQuoteCategory = document.getElementById('newQuoteCategory').value.trim();
+  if (newQuoteText === '' || newQuoteCategory === '') {
+    alert('Please enter both quote text and category.');
+    return;
+  }
+  const newQuote = { text: newQuoteText, category: newQuoteCategory };
+  quotes.push(newQuote);
+  saveQuotes();
+  populateCategories(); // Update the categories in the dropdown with the new category
+  filterQuotes(newQuoteCategory); // Display the newly added quote
+  document.getElementById('newQuoteFormContainer').style.display = 'none';
+  document.getElementById('newQuoteForm').reset();
+}
+
+function saveQuotes() {
+  localStorage.setItem('quotes', JSON.stringify(quotes));
+}
+
+function loadQuotes() {
+  const savedQuotes = localStorage.getItem('quotes');
+  if (savedQuotes) {
+    quotes = JSON.parse(savedQuotes);
+    populateCategories();
+    loadFilter();
+  }
 }
 
 function importFromJsonFile(event) {
@@ -79,24 +78,31 @@ function importFromJsonFile(event) {
     const importedQuotes = JSON.parse(event.target.result);
     quotes.push(...importedQuotes);
     saveQuotes();
+    filterQuotes(localStorage.getItem('lastFilter') || 'all'); // Set the filter to the last selected category or 'all' if not set
     alert('Quotes imported successfully!');
   };
   fileReader.readAsText(event.target.files[0]);
 }
 
-document.addEventListener('DOMContentLoaded', () => {
-  loadQuotes();
-  filterQuotes(localStorage.getItem('lastFilteredCategory') || 'all');
-});
-
+// Event listener for the "Show New Quote" button
 document.getElementById('newQuote').addEventListener('click', () => {
-  if(document.getElementById('newQuoteFormContainer').style.display === 'none'){
+  if (document.getElementById('newQuoteFormContainer').style.display === 'none') {
     document.getElementById('newQuoteFormContainer').style.display = 'block';
   } else {
-    addQuote();
+    filterQuotes(document.getElementById('categoryFilter').value);
   }
 });
 
-document.getElementById('categoryFilter').addEventListener('change', () => {
-  filterQuotes(document.getElementById('categoryFilter').value);
+document.getElementById('newQuoteFormContainer').addEventListener('submit', event => {
+  event.preventDefault();
+  addQuote();
 });
+
+document.getElementById('categoryFilter').addEventListener('change', event => {
+  filterQuotes(event.target.value);
+});
+
+document.getElementById('importFile').addEventListener('change', importFromJsonFile);
+
+// Initialize the quote display and filter loading
+loadQuotes();
