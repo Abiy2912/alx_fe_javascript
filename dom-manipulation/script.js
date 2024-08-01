@@ -6,7 +6,13 @@ const quotes = [
   { text: 'Believe you can and you’re halfway there.', category: 'Success' },
   { text: 'Happiness is not something ready made. It comes from your own actions.', category: 'Happiness' },
 ];
-
+function showRandomQuote() {
+  const randomIndex = Math.floor(Math.random() * quotes.length);
+  const randomQuote = quotes[randomIndex];
+  const quoteElement = document.createElement('div');
+  quoteElement.innerHTML = `<p class="text">${randomQuote.text}</p><p class="category">- ${randomQuote.category}</p>`;
+  document.getElementById('quoteDisplay').appendChild(quoteElement);
+}
 function populateCategories() {
   const uniqueCategories = new Set(quotes.map(item => item.category));
   const categoryFilter = document.getElementById('categoryFilter');
@@ -103,6 +109,7 @@ document.getElementById('categoryFilter').addEventListener('change', event => {
 });
 
 document.getElementById('importFile').addEventListener('change', importFromJsonFile);
+document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
 // Initialize the quote display and filter loading
 loadQuotes();
