@@ -35,7 +35,7 @@ function saveQuotes() {
   localStorage.setItem('quotes', JSON.stringify(quotes));
 }
 
-// Function to load quotes from local storage when the page is initialized
+// Function to load quotes from local storage
 function loadQuotes() {
   const savedQuotes = localStorage.getItem('quotes');
   if (savedQuotes) {
@@ -96,20 +96,18 @@ function filterQuotes(category = 'all') {
   const selectedFilter = document.querySelector(`#categoryFilter[value="${category}"]`);
   selectedFilter.classList.add('active');
 
-  
-   // Map the quotes to create filtered HTML elements
-   const filteredQuotes = quotes.map( quote => {
+  // Map the quotes to create filtered HTML elements
+  const filteredQuotes = quotes.map( quote => {
     if (category === 'all' || quote.category === category) {
-      return `<div class="category-filter">
+      return `<div class="category-filter ${category === 'all' ? 'active' : ''}">
                 <p>${ quote.text}</p><span>- ${ quote.category}</span>
               </div>`;
     }
-    return ''; // Return an empty string if the quote doesn't match the filter
-  }).filter(Boolean).join(''); // Remove empty strings and join the filtered HTML
+    return '';
+  }).join('');
 
   quoteContainer.innerHTML = filteredQuotes;
 }
-
 
 // Function to initialize the category filter
 function initializeCategoryFilter() {
