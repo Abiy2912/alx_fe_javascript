@@ -1,6 +1,3 @@
-let fetchJson;
-
-
 // Assume you have a fetchJson function that fetches data from a mock API and returns a promise with JSON data
 function fetchJson(url) {
   return fetch(url)
@@ -13,7 +10,7 @@ function fetchJson(url) {
     });
 }
 
-// Assume you have an API endpoint to fetch and save quotes, e.g., 'https://jsonplaceholder.typicode.com/quotes'
+// Assume you have an API endpoint to fetch quotes, e.g., 'https://jsonplaceholder.typicode.com/quotes'
 const apiEndpoint = 'https://jsonplaceholder.typicode.com/quotes';
 
 let quotes = [];
@@ -176,7 +173,7 @@ document.getElementById('submit-button').addEventListener('click', function(e) {
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
 // Event listener for the category filter
-document.getElementById('categoryfilter').addEventListener('change', (e) => {
+document.getElementById('categoryFilter').addEventListener('change', (e) => {
   const selectedCategory = e.target.value;
   filterQuotes(selectededCategory);
 });
@@ -185,3 +182,11 @@ document.getElementById('categoryfilter').addEventListener('change', (e) => {
 loadQuotes();
 initializeCategoryFilter();
 startPeriodicSync();
+
+// Function to start a periodic sync with the server for new quotes
+function startPeriodicSync() {
+  setTimeout(() => {
+    fetchQuotesFromServer();
+    startPeriodicSync(); // Recursively call itself to continue fetching every 5 minutes
+  }, 300000); // 5 minutes in milliseconds
+}
