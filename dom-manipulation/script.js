@@ -24,18 +24,17 @@ function fetchAndSyncQuotes() {
       quotes = serverQuotes;
       saveQuotes();
       filterQuotes('all'); // Update UI with the fetched data
+      lastFetchTime = Date.now();
+      setTimeout(fetchAndSyncQuotes, 300000); // Set next fetch for 5 minutes from now
     })
     .catch(error => {
       console.error('Failed to fetch quotes:', error);
       alert('Failed to fetch quotes from the server. Please check your internet connection and try again.');
     });
-
-  // Set up a recurring interval to fetch new quotes every 5 minutes
-  setTimeout(fetchAndSyncQuotes, 300000); // 300000 milliseconds = 5 minutes
 }
 
 // Function to add a new quote
-function addQuoteToList() {
+function addQuote() {
   const newQuoteText = document.getElementById('newQuoteText').value;
   const newQuoteCategory = document.getElementById('newQuoteCategory').value;
   const newQuote = { text: newQuoteText, category: newQuoteCategory };
@@ -43,6 +42,21 @@ function addQuoteToList() {
   saveQuotes();
   document.getElementById('newQuoteText').value = '';
   document.getElementById('newQuoteCategory').value = '';
+  // Optionally, you can now also send the new quote to the server to be saved
+  fetchJson(`${apiEndpoint}/${quotes.length + 1}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(newQuote)
+  })
+    .then(() => {
+      console.log('Quote added to server');
+    })
+    .catch(error => {
+      console.error('Failed to add quote to server:', error);
+      alert('Failed to add quote to the server. The quote has been saved locally.');
+    });
 }
 
 // Function to import quotes from a JSON file
@@ -104,7 +118,7 @@ function filterQuotes(category = 'all') {
   // Map the quotes to create filtered HTML elements
   const filteredQuotes = quotes.map( quote => {
     if (category === 'all' || quote.category === category) {
-      return `<div class="category-filter ${category === 'all' ? 'active' : ''}" data-category="${category}" data-id="${category === 'all' ? 'all' : quote.id}" onclick="toggleFilter(this)">
+      return `<div class="category-filter ${category === 'all' ? 'active' : ''}" data-category="${category}" data-id=${category === 'all' ? 'all' : quote.id}>
                 <p>${ quote.text}</p><span>- ${ quote.category}</span>
               </div>`;
     }
@@ -117,50 +131,94 @@ function filterQuotes(category = 'all') {
 
   // Update the UI with the filtered quotes
   quoteContainer.innerHTML = filteredQuotes;
+  localStorage.setItem('lastSelectedCategory', category); // Save the last selected category
 }
 
-// Function to toggle the visibility of filtered quotes
-function toggleFilter(element) {
-  const category = element.getAttribute('data-category');
-  const id = element.getAttribute('data-id');
-  element.classList.toggle('active');
-
-  if (category === 'all') {
-    document.querySelectorAll('.category-filter').forEach(filter => {
-      filter.classList.remove('active');
-    });
-  }
-
-  // Update the category filter select option
-  const categoryFilter = document.getElementById('categoryFilter');
-  categoryFilter.value = category;
-
-  // Sync the toggle state with local storage
-  localStorage.setItem('lastSelectedCategory', category);
-
-  // Update the UI with the toggled quotes
-  filterQuotes(category);
-}
+// Initialize the category filter and start the periodic fetch
+loadQuotes();
+populateCategories();
+filterQuotes(localStorage.getItem('lastSelectedCategory') || 'all');
 
 // Event listener for adding new quotes
-document.getElementById('submit-button').addEventListener('click', (e) => {
+document.getElementById('submit-button').addEventListener('click', function(e) {
   e.preventDefault();
-  addQuoteToList();
+  const contentInput = document.getElementById('newQuoteText');
+  const authorInput = document.getElementById('newQuoteCategory');
+
+  // Validate inputs
+  if (!contentInput.value || !authorInput.value) {
+    alert('Please fill in all fields.');
+    return;
+  }
+
+  // Add the new quote to the quotes array
+  const newQuote = {
+    id: quotes.length + 1,
+    text: contentInput.value,
+    category: authorInput.value
+  };
+  quotes.push(newQuote);
+  saveQuotes(); // Save the new quote to local storage
+
+  // Update the UI with the new quote
+  const newQuoteElement = document.createElement('div');
+  newQuoteElement.classList.add('category-filter');
+  newQuoteElement.innerHTML = `<p>${newQuote.text}</p><span>- ${newQuote.category}</span>`;
+  document.getElementById('quotes-container').appendChild(newQuoteElement);
 });
 
 // Event listener for the "Show New Quote" button
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
-// Event listener for the category filter select
+// Event listener for the category filter
 document.getElementById('categoryFilter').addEventListener('change', (e) => {
   const selectedCategory = e.target.value;
   filterQuotes(selectededCategory);
 });
 
-// Event listener for the import button
-document.getElementById('importFile').addEventListener('change', importFromJsonFile);
+// Function to fetch and show a random quote from the server
+function showRandomQuote() {
+  fetchJson(`${apiEndpoint}/random`)
+    .then(randomQuote => {
+      // Clear the current quote container
+      const quoteContainer = document.getElementById('quotes-container');
+      quoteContainer.innerHTML = '';
 
-// Initialize the category filter and start the periodic sync when the page loads
-loadQuotes();
-populateCategories();
-filterQuotes('all'); // Set initial UI to show all quotes
+      // Create a new quote element with the random quote
+      const newQuoteElement = document.createElement('div');
+      newQuoteElement.classList.add('category-filter');
+      newQuoteElement.innerHTML = `<p>${randomQuote.text}</p><span>- ${randomQuote.category}</span>`;
+      quoteContainer.appendChild(newQuoteElement);
+    })
+    .catch(error => {
+      console.error('Failed to fetch random quote:', error);
+      alert('Failed to fetch random quote. Please check your internet connection and try again.');
+    });
+}
+
+// Function to fetch and save quotes from the server
+function fetchAndSaveQuotes() {
+  fetchJson(apiEndpoint)
+    .then(serverQuotes => {
+      // Set the server quotes as the new source of data
+      quotes = serverQuotes;
+      saveQuotes();
+      // Update UI with the fetched data
+      filterQuotes('all');
+    })
+    .catch(error => {
+      console.error('Failed to fetch quotes:', error);
+      alert('Failed to fetch quotes from the server. Please check your internet connection and try again.');
+    });
+}
+
+// Function to fetch and save quotes from the server and populate the UI with them
+function startPeriodicSync() {
+  fetchAndSaveQuotes();
+  setTimeout(() => {
+    fetchAndSyncQuotes();
+  }, 300000); // Set next fetch for 5 minutes from now
+}
+
+// Initialize the periodic sync
+startPeriodicSync();
