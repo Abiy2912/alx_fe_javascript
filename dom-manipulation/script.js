@@ -1,147 +1,15 @@
-// Function to fetch and sync quotes from the server when the page loads
-function fetchAndSyncQuotes() {
-  fetchJson(apiEndpoint)
-    .then(serverQuotes => {
-      quotes = serverQuotes;
-      saveQuotes();
-      filterQuotes('all'); // Update UI with the fetched data
-    })
-    .catch(error => {
-      console.error('Failed to fetch quotes:', error);
-      alert('Failed to fetch quotes from the server. Using local storage data.');
-    });
-}
 
-// Function to start the periodic sync with the server
-function startPeriodicSync() {
-  setInterval(() => {
-    if (Date.now() - lastFetchTime > 300000) { // Fetch new data every 5 minutes
-      lastFetchTime = Date.now();
-      fetchQuotesFromServer();
-    }
-  }, 60000); // Check if it's time to sync every minute
-}
-
-// Function to show a random quote from the quotes array
-function showRandomQuote() {
-  const randomIndex = Math.floor(Math.random() * quotes.length);
-  const randomQuote = quotes[randomIndex];
-  const quoteElement = document.createElement('div');
-  quoteElement.classList.add('category-filter');
-  quoteElement.innerHTML = `<p>${randomQuote.text}</p><span>- ${randomQuote.category}</span>`;
-  document.getElementById('quotes-container').appendChild(quoteElement);
-}
-
-// Initialize the UI with the saved quotes
-loadQuotes();
-initializeCategoryFilter();
-startPeriodicSync();
-
-// Event listener for adding new quotes
-document.getElementById('submit-button').addEventListener('click', function(e) {
-  e.preventDefault();
-  const contentInput = document.getElementById('newQuoteText');
-  const authorInput = document.getElementById('newQuoteCategory');
-
-  // Validate inputs
-  if (!contentInput.value || !authorInput.value) {
-    alert('Please fill in all fields.');
-    return;
-  }
-
-  // Add the new quote to the quotes array
-  const newQuote = {
-    id: quotes.length + 1,
-    text: contentInput.value,
-    category: authorInput.value
-  };
-  quotes.push(newQuote);
-  saveQuotes(); // Save the new quote to local storage
-
-  // Update the UI with the new quote
-  const newQuoteElement = document.createElement('div');
-  newQuoteElement.classList.add('category-filter');
-  newQuoteElement.innerHTML = `<p>${newQuote.text}</p><span>- ${newQuote.category}</span>`;
-  document.getElementById('quotes-container').appendChild(newQuoteElement);
-
-  // Optionally, send the new quote to the server
-  fetchJson(`${apiEndpoint}/${quotes.length}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(newQuote)
-  })
-    .then(() => {
-      console.log('Quote added to server');
-    })
-    .catch(error => {
-      console.error('Failed to add quote to server:', error);
-      alert('Failed to add quote to the server. The quote has been saved locally.');
-    });
-});
-
-// Event listener for the "Show New Quote" button
-document.getElementById('newQuote').addEventListener('click', showRandomQuote);
-
-// Event listener for the category filter
-document.getElementById('categoryFilter').addEventListener('change', (e) => {
-  const selectedCategory = e.target.value;
-  filterQuotes(selectededCategory);
-});
-
-// Event listener for the "Add Quote" button
-document.getElementById('submit-button').addEventListener('click', function(e) {
-  e.preventDefault();
-  const newQuoteText = document.getElementById('newQuoteText').value;
-  const newQuoteCategory = document.getElementById('newQuoteCategory').value;
-  const newQuote = { text: newQuoteText, category: newQuoteCategory };
-  quotes.push(newQuote);
-  saveQuotes();
-  document.getElementById('newQuoteText').value = '';
-  document.getElementById('newQuoteCategory').value = '';
-});
-
-// Event listener for the "Import Quotes" button
-document.getElementById('importFile').addEventListener('change', importFromJsonFile);
-
-// Function to import quotes from a JSON file
-function importFromJsonFile(event) {
-  const fileReader = new FileReader();
-  fileReader.onload = function(event) {
-    const importedQuotes = JSON.parse(event.target.result);
-    quotes.push(...importedQuotes);
+// Function to fetch data from the server and update the UI
+async function fetchAndSyncQuotes() {
+  try {
+    const serverQuotes = await fetchJson(apiEndpoint);
+    quotes = serverQuotes;
     saveQuotes();
-    filterQuotes('all'); // Update UI with the imported quotes
-    alert('Quotes imported successfully!');
-  };
-  fileReader.readAsText(event.target.files[0]);
-}
-
-// Function to load quotes from local storage when the page is initialized
-function loadQuotes() {
-  const savedQuotes = localStorage.getItem('quotes');
-  if (savedQuotes) {
-    quotes = JSON.parse(savedQuotes);
-  } else {
-    fetchAndSyncQuotes(); // Fetch quotes from the server if none are saved locally
+    filterQuotes('all'); // Update UI with the fetched data
+  } catch (error) {
+    console.error('Failed to fetch quotes:', error);
+    alert('Failed to fetch quotes from the server. Initializing with empty data.');
   }
-}
-
-// Function to populate the category filter
-function populateCategories() {
-  const uniqueCategories = new Set();
-  quotes.forEach( quote => {
-    uniqueCategories.add( quote.category);
-  });
-
-  const categoryFilter = document.getElementById('categoryFilter');
-  uniqueCategories.forEach(category => {
-    const option = document.createElement('option');
-    option.value = category;
-    option.textContent = category;
-    categoryFilter.appendChild(option);
-  });
 }
 
 // Function to filter quotes based on the selected category
@@ -151,6 +19,10 @@ function filterQuotes(category = 'all') {
   activeFilters.forEach(filter => {
     filter.classList.remove('active');
   });
+
+  // Update the selected filter's class
+  const selectedFilter = document.querySelector(`#categoryFilter[value="${category}"]`);
+  selectedFilter.classList.add('active');
 
   // Map the quotes to create filtered HTML elements
   const filteredQuotes = quotes.map( quote => {
@@ -201,7 +73,13 @@ document.getElementById('submit-button').addEventListener('click', function(e) {
   quotes.push(newQuote);
   saveQuotes(); // Save the new quote to local storage
 
-  // Optionally, send the new quote to the server
+  // Update the UI with the new quote
+  const newQuoteElement = document.createElement('div');
+  newQuoteElement.classList.add('category-filter');
+  newQuoteElement.innerHTML = `<p>${newQuote.text}</p><span>- ${newQuote.category}</span>`;
+  document.getElementById('quotes-container').appendChild(newQuoteElement);
+
+  // Optionally, you can now also send the new quote to the server to be saved
   fetchJson(`${apiEndpoint}/${quotes.length}`, {
     method: 'POST',
     headers: {
@@ -216,12 +94,6 @@ document.getElementById('submit-button').addEventListener('click', function(e) {
       console.error('Failed to add quote to server:', error);
       alert('Failed to add quote to the server. The quote has been saved locally.');
     });
-
-  // Update the UI with the new quote
-  const newQuoteElement = document.createElement('div');
-  newQuoteElement.classList.add('category-filter');
-  newQuoteElement.innerHTML = `<p>${newQuote.text}</p><span>- ${newQuote.category}</span>`;
-  document.getElementById('quotes-container').appendChild(newQuoteElement);
 });
 
 // Event listener for the "Show New Quote" button
@@ -233,7 +105,18 @@ document.getElementById('categoryFilter').addEventListener('change', (e) => {
   filterQuotes(selectededCategory);
 });
 
-// Initialize the UI with the saved quotes and start the periodic sync
-loadQuotes();
-initializeCategoryFilter();
-startPeriodicSync();
+// Function to start periodic synchronization with the server
+function startPeriodicSync() {
+  setInterval(() => {
+    fetchAndSyncQuotes();
+  }, 300000); // Fetch new quotes from the server every 5 minutes (300000 milliseconds)
+}
+
+// Function to fetch data from the API and handle JSON parsing and errors
+async function fetchJson(url) {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error(`HTTP error! status: ${response.status}`);
+  }
+  return await response.json();
+}
