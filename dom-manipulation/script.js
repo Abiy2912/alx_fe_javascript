@@ -17,16 +17,13 @@ let quotes = [];
 let lastFetchTime = 0;
 
 // Function to fetch new quotes from the server every 5 minutes
-function fetchAndSyncQuotes() {
+function fetchQuotesFromServer() {
   fetchJson(apiEndpoint)
     .then(serverQuotes => {
-      // Merge local and server quotes with server quotes taking precedence in case of conflicts
-      const mergedQuotes = [...new Set([...quotes, ...serverQuotes]);
-      quotes = mergedQuotes.filter(
-        quote => !quotes.find(localQuote => localQuote.text === quote.text && localQuote.category === quote.category)
-      );
+      // Set the server quotes as the new source of data
+      quotes = serverQuotes;
       saveQuotes();
-      filterQuotes('all'); // Update UI with the synced data
+      filterQuotes('all'); // Update UI with the fetched data
     })
     .catch(error => {
       console.error('Failed to fetch quotes:', error);
@@ -34,15 +31,7 @@ function fetchAndSyncQuotes() {
     });
 }
 
-// Function to periodically fetch quotes from the server and update the UI
-function startPeriodicSync() {
-  setInterval(() => {
-    if (Date.now() - lastFetchTime > 5 * 60 * 1000) { // 5 minutes
-      lastFetchTime = Date.now();
-      fetchAndSyncQuotes();
-    }
-  }, 60 * 1000); // 1 minute to check for updates
-}
+
 
 // Function to add a new quote
 function addQuote() {
