@@ -3,21 +3,40 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Document</title>
+  <title>Dynamic Quote Generator</title>
 </head>
 <body>
-  <input type="text" id="newQuoteText" placeholder="Enter new quote text">
-<input type="text" id="newQuoteCategory" placeholder="Enter new quote category">
-<button id="newQuoteButton">Add Quote</button>
-<select id="categoryFilter">
-  <option value="all">All</option>
-</select>
-<button id="filterButton">Filter Quotes</button>
-<button id="exportButton">Export to JSON</button>
-<input type="file" id="importButton" accept=".json">
-<div id="categoryFilter"></div>
-<div id="quotelist"></div>
-<div id="newQuote"></div>
+  <h1>Dynamic Quote Generator</h1>
+  <h1>Dynamic Quote Generator</h1>
+  <div id="quoteDisplay"></div>
   
+  <button id="newQuote">Show New Quote</button>
+
+  <div id="newQuoteFormContainer">
+    <input id="newQuoteText" type="text" placeholder="Enter a new quote" />
+    <input id="newQuoteCategory" type="text" placeholder="Enter quote category" />
+    <button onclick="addQuote()">Add Quote</button>
+  </div>
+  <input type="file" id="importFile" accept=".json" onchange="importFromJsonFile(event)" />
+
+  <label for="categoryFilter">Filter by:</label>
+  <select id="categoryFilter" onchange="filterQuotes()">
+    <option value="all">All Categories</option>
+  </select>
+
+  <div id="categoryControls">
+    <button onclick="filterQuotes('all')">All Categories</button>
+    <button onclick="filterQuotes('Inspiration')">Inspiration</button>
+    <button onclick="filterQuotes('Work')">Work</button>
+    <button onclick="filterQuotes('Life')">Life</button>
+    <button onclick="filterQuotes('Adversity')">Adversity</button>
+    <button onclick="filterQuotes('Success')">Success</button>
+    <button onclick="filterQuotes('Happiness')">Happiness</button>
+  </div>
+
+  <input type="hidden" id="lastFilteredCategory" value="all" />
+    
+
+ <script src="script.js"></script>
 </body>
 </html>
