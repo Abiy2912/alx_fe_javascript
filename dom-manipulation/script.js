@@ -17,7 +17,7 @@ let quotes = [];
 let lastFetchTime = 0;
 
 // Function to fetch new quotes from the server every 5 minutes
-function fetchQuotesFromServer() {
+function fetchAndSyncQuotes() {
   fetchJson(apiEndpoint)
     .then(serverQuotes => {
       // Set the server quotes as the new source of data
@@ -29,12 +29,13 @@ function fetchQuotesFromServer() {
       console.error('Failed to fetch quotes:', error);
       alert('Failed to fetch quotes from the server. Please check your internet connection and try again.');
     });
+
+  // Set up a recurring interval to fetch new quotes every 5 minutes
+  setTimeout(fetchAndSyncQuotes, 300000); // 300000 milliseconds = 5 minutes
 }
 
-
-
 // Function to add a new quote
-function addQuote() {
+function addQuoteToList() {
   const newQuoteText = document.getElementById('newQuoteText').value;
   const newQuoteCategory = document.getElementById('newQuoteCategory').value;
   const newQuote = { text: newQuoteText, category: newQuoteCategory };
@@ -42,21 +43,6 @@ function addQuote() {
   saveQuotes();
   document.getElementById('newQuoteText').value = '';
   document.getElementById('newQuoteCategory').value = '';
-  // Optionally, you can now also send the new quote to the server to be saved
-  fetchJson(`${apiEndpoint}/${quotes.length + 1}`, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify(newQuote)
-  })
-    .then(() => {
-      console.log('Quote added to server');
-    })
-    .catch(error => {
-      console.error('Failed to add quote to server:', error);
-      alert('Failed to add quote to the server. The quote has been saved locally.');
-    });
 }
 
 // Function to import quotes from a JSON file
@@ -118,7 +104,7 @@ function filterQuotes(category = 'all') {
   // Map the quotes to create filtered HTML elements
   const filteredQuotes = quotes.map( quote => {
     if (category === 'all' || quote.category === category) {
-      return `<div class="category-filter ${category === 'all' ? 'active' : ''}" data-category="${category}" data-id=${category === 'all' ? 'all' : quote.id}>
+      return `<div class="category-filter ${category === 'all' ? 'active' : ''}" data-category="${category}" data-id="${category === 'all' ? 'all' : quote.id}" onclick="toggleFilter(this)">
                 <p>${ quote.text}</p><span>- ${ quote.category}</span>
               </div>`;
     }
@@ -133,54 +119,48 @@ function filterQuotes(category = 'all') {
   quoteContainer.innerHTML = filteredQuotes;
 }
 
-// Function to initialize the category filter
-function initializeCategoryFilter() {
-  // Populate the category filter
-  populateCategories();
+// Function to toggle the visibility of filtered quotes
+function toggleFilter(element) {
+  const category = element.getAttribute('data-category');
+  const id = element.getAttribute('data-id');
+  element.classList.toggle('active');
 
-  // Load the last selected category from local storage or default to 'all'
-  const lastSelectedCategory = localStorage.getItem('lastSelectedCategory') || 'all';
-  filterQuotes(lastSelectedCategory);
+  if (category === 'all') {
+    document.querySelectorAll('.category-filter').forEach(filter => {
+      filter.classList.remove('active');
+    });
+  }
+
+  // Update the category filter select option
+  const categoryFilter = document.getElementById('categoryFilter');
+  categoryFilter.value = category;
+
+  // Sync the toggle state with local storage
+  localStorage.setItem('lastSelectedCategory', category);
+
+  // Update the UI with the toggled quotes
+  filterQuotes(category);
 }
 
 // Event listener for adding new quotes
-document.getElementById('submit-button').addEventListener('click', function(e) {
+document.getElementById('submit-button').addEventListener('click', (e) => {
   e.preventDefault();
-  const contentInput = document.getElementById('newQuoteText');
-  const authorInput = document.getElementById('newQuoteCategory');
-
-  // Validate inputs
-  if (!contentInput.value || !authorInput.value) {
-    alert('Please fill in all fields.');
-    return;
-  }
-
-  // Add the new quote to the quotes array
-  const newQuote = {
-    id: quotes.length + 1,
-    text: contentInput.value,
-    category: authorInput.value
-  };
-  quotes.push(newQuote);
-  saveQuotes(); // Save the new quote to local storage
-
-  // Update the UI with the new quote
-  const newQuoteElement = document.createElement('div');
-  newQuoteElement.classList.add('category-filter');
-  newQuoteElement.innerHTML = `<p>${newQuote.text}</p><span>- ${newQuote.category}</span>`;
-  document.getElementById('quotes-container').appendChild(newQuoteElement);
+  addQuoteToList();
 });
 
 // Event listener for the "Show New Quote" button
 document.getElementById('newQuote').addEventListener('click', showRandomQuote);
 
-// Event listener for the category filter
+// Event listener for the category filter select
 document.getElementById('categoryFilter').addEventListener('change', (e) => {
   const selectedCategory = e.target.value;
   filterQuotes(selectededCategory);
 });
 
+// Event listener for the import button
+document.getElementById('importFile').addEventListener('change', importFromJsonFile);
+
 // Initialize the category filter and start the periodic sync when the page loads
 loadQuotes();
-initializeCategoryFilter();
-startPeriodicSync();
+populateCategories();
+filterQuotes('all'); // Set initial UI to show all quotes
