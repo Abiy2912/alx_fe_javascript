@@ -232,3 +232,79 @@ document.getElementById('syncButton').addEventListener('click', async () => {
 
 // Add the "Sync with Server" button to the UI
 syncQuotes();
+// Initialize the UI with the saved quotes and start the periodic sync
+loadQuotes();
+startPeriodicSync();
+
+// Function to sync quotes with the server
+async function syncQuotes() {
+  try {
+    const serverData = await fetchJson(apiEndpoint);
+    const uiNotification = document.createElement('div');
+    uiNotification.classList.add('notification');
+    uiNotification.textContent = 'Quotes synced with server!';
+    uiNotification.style.display = 'block';
+    document.body.appendChild(uiNotification);
+    setTimeout(() => {
+      uiNotification.style.display = 'none';
+    }, 3000); // Display the notification for 3 seconds
+
+    quotes = serverData;
+    saveQuotes();
+    filterQuotes('all'); // Update UI with the fetched data
+  } catch (error) {
+    console.error('Failed to sync data with server:', error);
+    const errorNotification = document.createElement('div');
+    errorNotification.classList.add('notification');
+    errorNotification.textContent = 'Failed to sync data with server.';
+    errorNotification.style.display = 'block';
+    errorNotification.style.backgroundColor = '#fcc';
+    document.body.appendChild(errorNotification);
+    setTimeout(() => {
+      errorNotification.style.display = 'none';
+    }, 3000); // Display the error notification for 3 seconds
+  }
+}
+
+// Event listener for the "Sync with Server" button
+document.getElementById('syncButton').addEventListener('click', async () => {
+  try {
+    await syncQuotes();
+  } catch (error) {
+    console.error('Failed to sync data with server:', error);
+    alert('Failed to sync data with the server. Using local storage data.');
+  }
+});
+
+// Function to check for data updates or conflicts
+async function checkForConflicts() {
+  try {
+    const serverQuotes = await fetchJson(apiEndpoint);
+    const localQuotes = JSON.parse(localStorage.getItem('quotes') || '[]');
+
+    if (JSON.stringify(serverQuotes) !== JSON.stringify(localQuotes)) {
+      const uiNotification = document.createElement('div');
+      uiNotification.classList.add('notification');
+      uiNotification.textContent = 'Data conflict detected. Syncing with server.';
+      uiNotification.style.display = 'block';
+      document.body.appendChild(uiNotification);
+      setTimeout(() => {
+        uiNotification.style.display = 'none';
+      }, 3000); // Display the notification for 3 seconds
+      await syncQuotes();
+    }
+  } catch (error) {
+    console.error('Failed to check for conflicts:', error);
+    alert('Failed to check for data conflicts with the server.');
+  }
+}
+
+// Add the check for data conflicts to the startPeriodicSync function
+function startPeriodicSync() {
+  setInterval(() => {
+    if (Date.now() - lastFetchTime > 300000) { // Fetch new data every 5 minutes
+      lastFetchTime = Date.now();
+      checkForConflicts(); // Check for conflicts before fetching quotes
+    }
+  }, 60000); // Check if it's time to sync every minute
+}
