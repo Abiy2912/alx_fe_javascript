@@ -236,9 +236,8 @@ document.getElementById('categoryFilter').addEventListener('change', (e) => {
 
 
 
-//`https://jsonplaceholder.typicode.com/quotes` for fetching data (GET request)
- //`https://jsonplaceholder.typicode.com/quotes` for posting updates (POST request)
-
+1. `https://jsonplaceholder.typicode.com/quotes` for fetching data (GET request)
+2. `https://jsonplaceholder.typicode.com/quotes` for posting updates (POST request)
 
 
 const fetchData = async () => {
